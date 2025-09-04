@@ -1,4 +1,4 @@
-package com.itravel.backend.Models;
+package com.itravel.backend.models;
 
 import java.time.LocalDateTime;
 
