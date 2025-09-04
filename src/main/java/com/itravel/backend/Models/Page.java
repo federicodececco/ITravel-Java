@@ -42,11 +42,11 @@ public class Page {
     @ManyToOne
     @JoinColumn(name = "travel_id")
     @JsonBackReference
-    private Long travel;
+    private Travel travel;
 
     @ManyToOne
     @JoinColumn(name = "profile_id")
     @JsonBackReference
-    private String profile;
+    private Profile profile;
 
 }

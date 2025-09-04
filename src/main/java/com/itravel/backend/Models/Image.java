@@ -17,17 +17,17 @@ import lombok.Data;
 public class Image {
 
     @Id
-    private String Id;
+    private String id;
 
     @ManyToOne
     @JoinColumn(name = "travel_id")
     @JsonBackReference
-    private Long travel;
+    private Travel travel;
 
     @ManyToOne
     @JoinColumn(name = "page_id")
     @JsonBackReference
-    private Long page;
+    private Page page;
 
     private String imageUrl;
 

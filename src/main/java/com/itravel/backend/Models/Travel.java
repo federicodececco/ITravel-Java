@@ -42,6 +42,6 @@ public class Travel {
     @ManyToOne
     @JoinColumn(name = "profile_id")
     @JsonBackReference
-    private String profile;
+    private Profile profile;
 
 }

@@ -1,6 +1,5 @@
 package com.itravel.backend.Models;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
