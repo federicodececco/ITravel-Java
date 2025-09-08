@@ -27,7 +27,7 @@ public class Travel {
 
     private String location;
 
-    private String desctription;
+    private String description;
 
     private String coverImageUrl;
 
