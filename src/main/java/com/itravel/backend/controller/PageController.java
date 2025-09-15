@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.itravel.backend.models.Image;
 import com.itravel.backend.models.Page;
+
 import com.itravel.backend.service.CloudFlareR2Service;
 import com.itravel.backend.service.ImageService;
 import com.itravel.backend.service.PageService;
@@ -21,9 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/pages")
@@ -62,9 +61,8 @@ public class PageController {
         }
     }
 
-    @PostMapping("/save")
-    public ResponseEntity<?> addPage(@RequestBody Page page,
-            @RequestParam(value = "file", required = false) MultipartFile image) {
+    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> addPage(@RequestBody Page page) {
         try {
 
             if (page == null) {
@@ -79,33 +77,9 @@ public class PageController {
                 return ResponseEntity.badRequest().body("Travel ID is required");
             }
 
-            if (image != null && !image.isEmpty()) {
-                try {
-                    String imageKey = cloudFlareR2Service.uploadFile(image);
+            Page newPage = pageService.create(page);
 
-                    page.setCoverImageUrl(imageKey);
-
-                    Page savedPage = pageService.create(page);
-
-                    Image img = new Image();
-                    img.setImageUrl(imageKey);
-                    img.setIsCover(true);
-                    img.setPage(savedPage);
-                    img.setTravel(savedPage.getTravel());
-
-                    imageService.save(img);
-
-                    return ResponseEntity.ok(savedPage);
-
-                } catch (Exception uploadException) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body("Error uploading image: " + uploadException.getMessage());
-                }
-            } else {
-
-                Page newPage = pageService.create(page);
-                return ResponseEntity.ok(newPage);
-            }
+            return ResponseEntity.ok(newPage);
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

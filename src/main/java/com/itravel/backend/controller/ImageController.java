@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @RequestMapping("/api/images")
 @CrossOrigin(origins = "*")
+@RestController
 public class ImageController {
 
     @Autowired
@@ -55,17 +57,11 @@ public class ImageController {
                 return ResponseEntity.badRequest().body("Travel not found with id: " + travelId);
             }
 
-            Optional<Page> optPage = pageService.findById(Long.valueOf(pageId));
-            if (optPage.isEmpty()) {
-                return ResponseEntity.badRequest().body("Page not found with id: " + pageId);
-            }
-
             String imageKey = cloudFlareR2Service.uploadFile(image);
 
             Image img = new Image();
             img.setImageUrl(imageKey);
             img.setIsCover(isCover);
-            img.setPage(optPage.get());
             img.setTravel(optTravel.get());
 
             Image savedImage = imageService.save(img);

@@ -13,10 +13,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "pages")
 @Data
+@Getter
+@Setter
 public class Page {
 
     @Id
@@ -41,12 +45,12 @@ public class Page {
 
     @ManyToOne
     @JoinColumn(name = "travel_id")
-    @JsonBackReference
+
     private Travel travel;
 
     @ManyToOne
     @JoinColumn(name = "profile_id")
-    @JsonBackReference
+
     private Profile profile;
 
 }
