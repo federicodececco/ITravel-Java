@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,12 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.itravel.backend.models.Travel;
 import com.itravel.backend.service.TravelService;
 
-import reactor.core.publisher.Mono;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -27,56 +23,52 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class TravelController {
 
     @Autowired
-    TravelService travelService;
+    private TravelService travelService;
 
     @GetMapping("/")
-    public Mono<ResponseEntity<List<Travel>>> index() {
+    public ResponseEntity<List<Travel>> index() {
         try {
-            List<Travel> res = travelService.findAll();
-            return Mono.just(new ResponseEntity<>(res, HttpStatus.OK));
+            List<Travel> travels = travelService.findAll();
+            return ResponseEntity.ok(travels);
         } catch (Exception e) {
-            return Mono.just(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<Travel>> getTravelById(@PathVariable Long id) {
+    public ResponseEntity<Travel> getTravelById(@PathVariable Long id) {
         try {
             Optional<Travel> optTravel = travelService.findById(id);
             if (optTravel.isEmpty()) {
-                return Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                return ResponseEntity.notFound().build();
             }
-            return Mono.just(new ResponseEntity<>(optTravel.get(), HttpStatus.OK));
-
+            return ResponseEntity.ok(optTravel.get());
         } catch (Exception e) {
-            return Mono.just(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PostMapping("/save")
-    public Mono<ResponseEntity<Travel>> addPlace(@RequestBody Travel travel) {
-
+    public ResponseEntity<Travel> addTravel(@RequestBody Travel travel) {
         try {
             Travel newTravel = travelService.create(travel);
-            return Mono.just(new ResponseEntity<>(newTravel, HttpStatus.OK));
+            return ResponseEntity.ok(newTravel);
         } catch (Exception e) {
-            return Mono.just(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
     }
 
     @DeleteMapping("/delete/{id}")
-    public Mono<ResponseEntity<Travel>> removePlaceById(@PathVariable Long id) {
+    public ResponseEntity<Void> removeTravelById(@PathVariable Long id) {
         try {
             Optional<Travel> travelToDelete = travelService.findById(id);
             if (travelToDelete.isEmpty()) {
-                return Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                return ResponseEntity.notFound().build();
             }
             travelService.deleteById(id);
-            return Mono.just(new ResponseEntity<>(HttpStatus.OK));
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return Mono.just(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 }
