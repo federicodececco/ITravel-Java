@@ -2,6 +2,7 @@ package com.itravel.backend.service;
 
 import com.itravel.backend.dto.UploadResult;
 import com.itravel.backend.models.Image;
+import com.itravel.backend.models.Page;
 import com.itravel.backend.models.Travel;
 import com.itravel.backend.repository.ImageRepository;
 

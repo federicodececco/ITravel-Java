@@ -6,16 +6,13 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itravel.backend.models.Image;
 import com.itravel.backend.models.Page;
-import com.itravel.backend.models.Travel;
 import com.itravel.backend.service.CloudFlareR2Service;
 import com.itravel.backend.service.ImageService;
 import com.itravel.backend.service.PageService;
-import com.itravel.backend.service.TravelService;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
