@@ -1,7 +1,6 @@
 package com.itravel.backend.controller;
 
 import com.itravel.backend.models.Image;
-import com.itravel.backend.models.Page;
 import com.itravel.backend.models.Travel;
 import com.itravel.backend.service.CloudFlareR2Service;
 import com.itravel.backend.service.ImageService;
