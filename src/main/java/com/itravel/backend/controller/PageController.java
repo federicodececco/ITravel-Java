@@ -17,42 +17,43 @@ import com.itravel.backend.service.ImageService;
 import com.itravel.backend.service.PageService;
 import com.itravel.backend.service.TravelService;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@Controller
+@RestController
 @RequestMapping("/api/pages")
+@CrossOrigin(origins = "*")
 public class PageController {
 
     @Autowired
-    PageService pageService;
+    private PageService pageService;
 
     @Autowired
-    TravelService travelService;
+    private ImageService imageService;
 
     @Autowired
-    ImageService imageService;
-
-    @Autowired
-    CloudFlareR2Service cloudFlareR2Service;
+    private CloudFlareR2Service cloudFlareR2Service;
 
     @GetMapping("/")
-    public ResponseEntity<List<Page>> index() {
+    public ResponseEntity<?> index() {
         try {
             List<Page> pages = pageService.findAll();
             return ResponseEntity.ok(pages);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving pages");
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Page> getPageById(@PathVariable Long id) {
+    public ResponseEntity<?> getPageById(@PathVariable Long id) {
         try {
             Optional<Page> optPage = pageService.findById(id);
             if (optPage.isEmpty()) {
@@ -60,30 +61,80 @@ public class PageController {
             }
             return ResponseEntity.ok(optPage.get());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving page");
         }
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Page> addPage(@RequestBody Page page, @RequestParam("file") MultipartFile image) {
+    public ResponseEntity<?> addPage(@RequestBody Page page,
+            @RequestParam(value = "file", required = false) MultipartFile image) {
         try {
 
-            String url = cloudFlareR2Service.uploadFile(image);
-            Image img = new Image();
-            img.setImageUrl(url);
-            img.setIsCover(true);
-            img.setPage(page);
-            img.setTravel(page.getTravel());
-            page.setCoverImageUrl(url);
-            Page newPage = pageService.create(page);
-            return ResponseEntity.ok(newPage);
+            if (page == null) {
+                return ResponseEntity.badRequest().body("Page data is required");
+            }
+
+            if (page.getTravel() == null) {
+                return ResponseEntity.badRequest().body("Travel information is required");
+            }
+
+            if (page.getTravel().getId() == null) {
+                return ResponseEntity.badRequest().body("Travel ID is required");
+            }
+
+            if (image != null && !image.isEmpty()) {
+                try {
+                    String imageKey = cloudFlareR2Service.uploadFile(image);
+
+                    page.setCoverImageUrl(imageKey);
+
+                    Page savedPage = pageService.create(page);
+
+                    Image img = new Image();
+                    img.setImageUrl(imageKey);
+                    img.setIsCover(true);
+                    img.setPage(savedPage);
+                    img.setTravel(savedPage.getTravel());
+
+                    imageService.save(img);
+
+                    return ResponseEntity.ok(savedPage);
+
+                } catch (Exception uploadException) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Error uploading image: " + uploadException.getMessage());
+                }
+            } else {
+
+                Page newPage = pageService.create(page);
+                return ResponseEntity.ok(newPage);
+            }
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating page: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updatePage(@PathVariable Long id, @RequestBody Page page) {
+        try {
+            Optional<Page> existingPage = pageService.findById(id);
+            if (existingPage.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            page.setId(id);
+            Page updatedPage = pageService.create(page);
+            return ResponseEntity.ok(updatedPage);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating page");
         }
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> removePageById(@PathVariable Long id) {
+    public ResponseEntity<?> removePageById(@PathVariable Long id) {
         try {
             Optional<Page> pageToDelete = pageService.findById(id);
             if (pageToDelete.isEmpty()) {
@@ -92,8 +143,7 @@ public class PageController {
             pageService.deleteById(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting page");
         }
     }
-
 }

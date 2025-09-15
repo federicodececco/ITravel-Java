@@ -2,6 +2,7 @@ package com.itravel.backend.service;
 
 import com.itravel.backend.dto.UploadResult;
 import com.itravel.backend.models.Image;
+import com.itravel.backend.models.Travel;
 import com.itravel.backend.repository.ImageRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class ImageService {
         return imageRepository.save(image);
     }
 
-    public List<Image> saveMultiple(List<UploadResult> uploadResults, Long travelId, Long pageId) {
+    public List<Image> saveMultiple(List<UploadResult> uploadResults, Travel travel, Page page) {
         List<Image> images = new ArrayList<>();
 
         for (UploadResult result : uploadResults) {
@@ -38,12 +39,12 @@ public class ImageService {
             image.setCreatedAt(LocalDateTime.now());
             image.setUpdatedAt(LocalDateTime.now());
 
-            if (travelId != null) {
-
+            if (travel != null) {
+                image.setTravel(travel);
             }
 
-            if (pageId != null) {
-
+            if (page != null) {
+                image.setPage(page);
             }
 
             images.add(imageRepository.save(image));
@@ -57,18 +58,34 @@ public class ImageService {
         return image.orElse(null);
     }
 
+    public Optional<Image> findByIdOptional(String id) {
+        return imageRepository.findById(id);
+    }
+
     public List<Image> findAll() {
         return imageRepository.findAll();
     }
 
     public List<Image> findByTravelId(Long travelId) {
 
-        return new ArrayList<>();
+        return imageRepository.findAll().stream()
+                .filter(img -> img.getTravel() != null && img.getTravel().getId().equals(travelId)).toList();
     }
 
     public List<Image> findByPageId(Long pageId) {
 
-        return new ArrayList<>();
+        return imageRepository.findAll().stream()
+                .filter(img -> img.getPage() != null && img.getPage().getId().equals(pageId)).toList();
+    }
+
+    public List<Image> findByTravelIdAndIsCover(Long travelId, boolean isCover) {
+        return imageRepository.findAll().stream().filter(img -> img.getTravel() != null
+                && img.getTravel().getId().equals(travelId) && img.getIsCover().equals(isCover)).toList();
+    }
+
+    public List<Image> findByPageIdAndIsCover(Long pageId, boolean isCover) {
+        return imageRepository.findAll().stream().filter(img -> img.getPage() != null
+                && img.getPage().getId().equals(pageId) && img.getIsCover().equals(isCover)).toList();
     }
 
     public void deleteById(String id) {
@@ -81,5 +98,15 @@ public class ImageService {
 
     public long count() {
         return imageRepository.count();
+    }
+
+    public void deleteByTravelId(Long travelId) {
+        List<Image> imagesToDelete = findByTravelId(travelId);
+        imageRepository.deleteAll(imagesToDelete);
+    }
+
+    public void deleteByPageId(Long pageId) {
+        List<Image> imagesToDelete = findByPageId(pageId);
+        imageRepository.deleteAll(imagesToDelete);
     }
 }
