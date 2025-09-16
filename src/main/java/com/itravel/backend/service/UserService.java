@@ -26,6 +26,9 @@ public class UserService {
     UserRepository userRepository;
 
     @Autowired
+    ProfileService profileService;
+
+    @Autowired
     JwtUtil jwtUtil;
 
     @Autowired
@@ -40,9 +43,8 @@ public class UserService {
         User user = new User();
         user.setEmail(requestBody.getEmail());
         user.setPassword(passwordEncoder.encode(requestBody.getPassword()));
-
         userRepository.save(user);
-
+        profileService.createProfileByUser(user);
         return jwtUtil.generateToken(user.getEmail(), user.getId());
     }
 
