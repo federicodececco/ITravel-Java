@@ -1,9 +1,5 @@
 package com.itravel.backend.service;
 
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -15,7 +11,6 @@ import com.itravel.backend.security.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.security.MessageDigest;
 import java.util.Optional;
 
 @Slf4j

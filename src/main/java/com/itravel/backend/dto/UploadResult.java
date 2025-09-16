@@ -16,4 +16,8 @@ public class UploadResult {
     private String publicUrl;
     private String path;
     private long size;
+
+    public String getPublicUrl() {
+        return this.publicUrl;
+    }
 }

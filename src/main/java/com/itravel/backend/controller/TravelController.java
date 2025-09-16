@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.itravel.backend.models.Profile;
 import com.itravel.backend.models.Travel;
-import com.itravel.backend.security.JwtUtil;
 import com.itravel.backend.service.ProfileService;
 import com.itravel.backend.service.TravelService;
 
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
 @RequestMapping("/api/travels")
@@ -36,9 +34,6 @@ public class TravelController {
 
     @Autowired
     private ProfileService profileService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
 
     @GetMapping("/")
     public ResponseEntity<?> index() {

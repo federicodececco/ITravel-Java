@@ -20,8 +20,6 @@ public class AuthController {
 
     @Autowired
     public UserService userService;
-    @Autowired
-    private JwtUtil jwtUtil;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<String>> signup(@RequestBody SignupRequest user) {
