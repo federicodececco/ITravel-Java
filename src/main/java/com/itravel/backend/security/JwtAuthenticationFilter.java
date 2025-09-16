@@ -27,13 +27,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String requestURI = request.getRequestURI();
-        String authHeader = request.getHeader("Authorization");
 
         // Skip JWT validation for open endpoints
         if (requestURI.equals("/auth/login") || requestURI.equals("/auth/signup")) {
             chain.doFilter(request, response);
             return;
         }
+
+        String authHeader = request.getHeader("Authorization");
 
         // Validate JWT for protected endpoints
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -53,14 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"message\": \"Invalid or expired JWT token\"}");
-                return;
+
             }
-        } else {
-            // Block requests without a valid token
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"message\": \"Authorization header is missing or invalid\"}");
-            return;
         }
 
         chain.doFilter(request, response);

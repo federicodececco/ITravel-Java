@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.itravel.backend.dto.SignupRequest;
 import com.itravel.backend.models.User;
@@ -27,15 +28,8 @@ public class UserService {
     @Autowired
     JwtUtil jwtUtil;
 
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error hashing password", e);
-        }
-    }
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     public String signup(SignupRequest requestBody) {
         Optional<User> existingUser = userRepository.findByEmail(requestBody.getEmail());
@@ -45,7 +39,7 @@ public class UserService {
 
         User user = new User();
         user.setEmail(requestBody.getEmail());
-        user.setPassword(hashPassword(requestBody.getPassword()));
+        user.setPassword(passwordEncoder.encode(requestBody.getPassword()));
 
         userRepository.save(user);
 
@@ -56,7 +50,7 @@ public class UserService {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (user.getPassword().equals(hashPassword(password))) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
             return jwtUtil.generateToken(email, user.getId());
         }
 
