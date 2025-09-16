@@ -7,13 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itravel.backend.models.Page;
-
+import com.itravel.backend.models.Profile;
+import com.itravel.backend.models.Travel;
 import com.itravel.backend.service.CloudFlareR2Service;
 import com.itravel.backend.service.ImageService;
 import com.itravel.backend.service.PageService;
+import com.itravel.backend.service.ProfileService;
+import com.itravel.backend.service.TravelService;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,10 +38,10 @@ public class PageController {
     private PageService pageService;
 
     @Autowired
-    private ImageService imageService;
+    private ProfileService profileService;
 
     @Autowired
-    private CloudFlareR2Service cloudFlareR2Service;
+    private TravelService travelService;
 
     @GetMapping("/")
     public ResponseEntity<?> index() {
@@ -61,7 +66,7 @@ public class PageController {
         }
     }
 
-    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/save")
     public ResponseEntity<?> addPage(@RequestBody Page page) {
         try {
 
@@ -77,6 +82,26 @@ public class PageController {
                 return ResponseEntity.badRequest().body("Travel ID is required");
             }
 
+            Optional<Travel> optTravel = travelService.findById(page.getTravel().getId());
+            if (optTravel.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("travel not found with id" + page.getTravel().getId());
+            }
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userEmail = authentication.getName();
+
+            Profile userProfile = profileService.findByEmail(userEmail)
+                    .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+            Travel travel = optTravel.get();
+            if (userProfile.getId() != travel.getProfile().getId()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("User and travel profile mismatch, you cannot create a page for a travel you don't own");
+            }
+
+            page.setTravel(travel);
+            page.setProfile(userProfile);
             Page newPage = pageService.create(page);
 
             return ResponseEntity.ok(newPage);

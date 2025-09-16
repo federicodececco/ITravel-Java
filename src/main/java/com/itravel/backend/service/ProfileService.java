@@ -1,5 +1,7 @@
 package com.itravel.backend.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,10 @@ public class ProfileService {
             return false;
         }
 
+    }
+
+    public Optional<Profile> findByEmail(String email) {
+        return profileRepository.findByEmail(email);
     }
 
 }

@@ -1,15 +1,19 @@
 package com.itravel.backend.controller;
 
 import com.itravel.backend.models.Image;
+import com.itravel.backend.models.Profile;
 import com.itravel.backend.models.Travel;
 import com.itravel.backend.service.CloudFlareR2Service;
 import com.itravel.backend.service.ImageService;
 import com.itravel.backend.service.PageService;
+import com.itravel.backend.service.ProfileService;
 import com.itravel.backend.service.TravelService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @RequestMapping("/api/images")
 @CrossOrigin(origins = "*")
@@ -33,6 +38,8 @@ public class ImageController {
 
     @Autowired
     private TravelService travelService;
+
+    private ProfileService profileService;
 
     @Autowired
     private PageService pageService;

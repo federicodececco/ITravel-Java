@@ -6,10 +6,15 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.itravel.backend.models.Profile;
 import com.itravel.backend.models.Travel;
+import com.itravel.backend.security.JwtUtil;
+import com.itravel.backend.service.ProfileService;
 import com.itravel.backend.service.TravelService;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
 @RequestMapping("/api/travels")
@@ -27,6 +33,12 @@ public class TravelController {
 
     @Autowired
     private TravelService travelService;
+
+    @Autowired
+    private ProfileService profileService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping("/")
     public ResponseEntity<?> index() {
@@ -55,6 +67,12 @@ public class TravelController {
     public ResponseEntity<?> addTravel(@RequestBody Travel travel) {
         try {
 
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userEmail = authentication.getName();
+
+            Profile userProfile = profileService.findByEmail(userEmail)
+                    .orElseThrow(() -> new RuntimeException("Profile not found"));
+
             if (travel.getTitle() == null || travel.getTitle().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Travel title is required");
             }
@@ -62,7 +80,7 @@ public class TravelController {
             if (travel.getLocation() == null || travel.getLocation().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Travel location is required");
             }
-
+            travel.setProfile(userProfile);
             Travel newTravel = travelService.create(travel);
             return ResponseEntity.ok(newTravel);
         } catch (Exception e) {
