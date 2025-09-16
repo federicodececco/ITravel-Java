@@ -59,6 +59,7 @@ public class ImageController {
             String imageKey = cloudFlareR2Service.uploadFile(image);
 
             Image img = new Image();
+            img.setId(imageKey);
             img.setImageUrl(imageKey);
             img.setIsCover(isCover);
             img.setTravel(optTravel.get());

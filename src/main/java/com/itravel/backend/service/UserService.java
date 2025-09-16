@@ -38,28 +38,24 @@ public class UserService {
     }
 
     public String signup(SignupRequest requestBody) {
-        // Check if the user already exists
         Optional<User> existingUser = userRepository.findByEmail(requestBody.getEmail());
         if (existingUser.isPresent()) {
             throw new RuntimeException("User already exists");
         }
 
-        // Create and save the new user
         User user = new User();
         user.setEmail(requestBody.getEmail());
         user.setPassword(hashPassword(requestBody.getPassword()));
 
         userRepository.save(user);
 
-        // Generate and return a JWT token
         return jwtUtil.generateToken(user.getEmail(), user.getId());
     }
 
     public String login(String email, String password) {
-        // Find the user by email
+
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Validate the password
         if (user.getPassword().equals(hashPassword(password))) {
             return jwtUtil.generateToken(email, user.getId());
         }
@@ -68,10 +64,9 @@ public class UserService {
     }
 
     public void deleteByEmail(String email) {
-        // Find the user by email
+
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Delete the user
         userRepository.delete(user);
     }
 }
